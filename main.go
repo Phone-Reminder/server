@@ -3,19 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/twilio/twilio-go"
+	api "github.com/twilio/twilio-go/rest/api/v2010"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type AddReminder struct {
-	UserID      int    `json:"userid"`
-	Name        string `json:"name"`
-	PhoneNumber string `json:"phonenumber"`
-	Message     string `json:"message"`
+	UserID      int       `json:"userid"`
+	Date        time.Time `json:"date"`
+	PhoneNumber string    `json:"phonenumber"`
+	Message     string    `json:"message"`
 }
 
 func main() {
@@ -43,6 +47,11 @@ func main() {
 	collection := client.Database("reminder").Collection("reminders")
 
 	r := gin.Default()
+
+	//LOGIC
+	// Schedule a task to run every minute
+	// ticker := time.NewTicker(time.Minute)
+
 	r.POST("/addReminder", func(c *gin.Context) {
 		var addRemData AddReminder
 		if err := c.ShouldBindJSON(&addRemData); err != nil {
@@ -62,33 +71,37 @@ func main() {
 	r.GET("/getReminder", func(c *gin.Context) {
 		// Find all reminders in the collection
 		// Find all the reminders
-	cur, err := collection.Find(context.TODO(), bson.M{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Define a slice to hold the reminders
-	var reminders []AddReminder
-
-	// Iterate over the cursor and decode the reminders into the slice
-	for cur.Next(context.TODO()) {
-		var reminder AddReminder
-		err := cur.Decode(&reminder)
+		cur, err := collection.Find(context.TODO(), bson.M{})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		reminders = append(reminders, reminder)
-	}
 
-	// Return the slice of reminders
-	c.JSON(http.StatusOK, gin.H{"reminders": reminders})
-})
+		// Define a slice to hold the reminders
+		var reminders []AddReminder
+
+		// Iterate over the cursor and decode the reminders into the slice
+		for cur.Next(context.TODO()) {
+			var reminder AddReminder
+			err := cur.Decode(&reminder)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			reminders = append(reminders, reminder)
+		}
+
+		// Return the slice of reminders
+		c.JSON(http.StatusOK, gin.H{"reminders": reminders})
+	})
+
+	//server
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Listening to the Localhost",
 		})
 	})
 	r.Run("localhost:8080")
+	fmt.Println("hi")
+
 }
