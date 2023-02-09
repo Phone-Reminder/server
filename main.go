@@ -51,34 +51,36 @@ func main() {
 	//LOGIC
 	// Schedule a task to run every minute
 	ticker := time.NewTicker(time.Minute)
-	for range ticker.C {
-		currTime := time.Now().UTC()
+	go func() {
+		for range ticker.C {
+			currTime := time.Now().UTC()
 
-		var reminder AddReminder
-		err := collection.FindOne(context.Background(), bson.M{"date": currTime}).Decode(&reminder)
+			var reminder AddReminder
+			err := collection.FindOne(context.Background(), bson.M{"date": currTime}).Decode(&reminder)
 
-		if err != nil {
-			log.Printf("Failed to find reminder: %v", err)
-			continue
-		}
-		clientSMS := twilio.NewRestClient()
+			if err != nil {
+				log.Printf("Failed to find reminder: %v", err)
+				continue
+			}
+			clientSMS := twilio.NewRestClient()
 
-		params := &api.CreateMessageParams{}
-		params.SetBody("Hello There!")
-		params.SetFrom("+13203357753")
-		params.SetTo("+447876801343")
+			params := &api.CreateMessageParams{}
+			params.SetBody("Hello There!")
+			params.SetFrom("+13203357753")
+			params.SetTo("+447876801343")
 
-		resp, err := clientSMS.Api.CreateMessage(params)
-		if err != nil {
-			fmt.Println(err.Error())
-		} else {
-			if resp.Sid != nil {
-				fmt.Println(*resp.Sid)
+			resp, err := clientSMS.Api.CreateMessage(params)
+			if err != nil {
+				fmt.Println(err.Error())
 			} else {
-				fmt.Println(resp.Sid)
+				if resp.Sid != nil {
+					fmt.Println(*resp.Sid)
+				} else {
+					fmt.Println(resp.Sid)
+				}
 			}
 		}
-	}
+	}()
 
 	// clientSMS := twilio.NewRestClient()
 
