@@ -10,7 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type AddReminder struct {
+	UserID      int    `json:"userid"`
+	Name        string `json:"name"`
+	PhoneNumber string `json:"phonenumber"`
+	Message     string `json:"message"`
+}
+
 func main() {
+
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
@@ -33,24 +41,51 @@ func main() {
 	// Get a handle for your collection
 	collection := client.Database("reminder").Collection("reminders")
 
-	// Insert a single document
-	_, err = collection.InsertOne(context.TODO(), map[string]interface{}{
-		"field1": "value1",
-		"field2": "value2",
-	})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println("Collection created and document inserted!")
-
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
+	r.POST("/addReminder", func(c *gin.Context) {
+		var addRemData AddReminder
+		if err := c.ShouldBindJSON(&addRemData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		// Insert the reminder into the collection
+		_, err = collection.InsertOne(context.TODO(), addRemData)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
 		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
+			"message": "Reminder added Successfully"})
+	})
+	r.GET("/getReminder", func(c *gin.Context) {
+		// Find all reminders in the collection
+		cursor, err := collection.Find(context.TODO(), nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer cursor.Close(context.TODO())
+
+		// Iterate over the cursor and build a slice of AddReminder
+		var reminders []AddReminder
+		for cursor.Next(context.TODO()) {
+			var reminder AddReminder
+			if err := cursor.Decode(&reminder); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+			reminders = append(reminders, reminder)
+		}
+
+		// Return the slice of reminders
+		c.JSON(http.StatusOK, gin.H{"reminders": reminders})
+	})
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Listening to the Localhost",
 		})
 	})
-	r.Run("localhost:8080") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	r.Run("localhost:8080")
 
 }
