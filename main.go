@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,17 +25,17 @@ type AddReminder struct {
 }
 
 func main() {
-
-	x := AddReminder{
-		UserID:      4,
-		Date:        time.Date(2023, 03, 9, 17, 58, 0, 0, time.UTC),
-		PhoneNumber: "+447876801343",
-		Message:     "Hi it worked",
+	// Load environment variables from .env file
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Println("Error loading .env file:", err)
 	}
-	fmt.Println(x)
 
 	// Set client options
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	dbConnection := os.Getenv("DBURI")
+	fromPhoneNo := os.Getenv("FROMPHONENO")
+	localHost := os.Getenv("LOCALHOST")
+	clientOptions := options.Client().ApplyURI(dbConnection)
 
 	// Connect to MongoDB
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -73,12 +75,12 @@ func main() {
 
 			if reminder.Date.Before(currTime) {
 				// The reminder date has passed the current time
-				fmt.Println("if statement entered")
+
 				clientSMS := twilio.NewRestClient()
 
 				params := &api.CreateMessageParams{}
 				params.SetBody(reminder.Message)
-				params.SetFrom("+13203357753")
+				params.SetFrom(fromPhoneNo)
 				params.SetTo(reminder.PhoneNumber)
 
 				resp, err := clientSMS.Api.CreateMessage(params)
@@ -150,6 +152,5 @@ func main() {
 			"message": "Listening to the Localhost",
 		})
 	})
-	r.Run("localhost:8080")
-	fmt.Println("hi")
+	r.Run(localHost)
 }
