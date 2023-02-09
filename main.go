@@ -62,9 +62,9 @@ func main() {
 	go func() {
 		for range ticker.C {
 			currTime := time.Now().UTC()
-
+			ctx := context.Background()
 			var reminder AddReminder
-			err := collection.FindOne(context.Background(), bson.M{"date": bson.M{"$lt": currTime}}).Decode(&reminder)
+			err := collection.FindOne(ctx, bson.M{"date": bson.M{"$lt": currTime}}).Decode(&reminder)
 
 			if err != nil {
 				log.Printf("Failed to find reminder: %v", err)
@@ -77,9 +77,9 @@ func main() {
 				clientSMS := twilio.NewRestClient()
 
 				params := &api.CreateMessageParams{}
-				params.SetBody("Hello There!")
+				params.SetBody(reminder.Message)
 				params.SetFrom("+13203357753")
-				params.SetTo("+447876801343")
+				params.SetTo(reminder.PhoneNumber)
 
 				resp, err := clientSMS.Api.CreateMessage(params)
 				if err != nil {
@@ -89,7 +89,13 @@ func main() {
 						fmt.Println(*resp.Sid)
 					} else {
 						fmt.Println(resp.Sid)
+
 					}
+
+				}
+				_, err = collection.DeleteOne(ctx, bson.M{"date": reminder.Date})
+				if err != nil {
+					log.Printf("Failed to delete reminder: %v", err)
 				}
 			}
 		}
