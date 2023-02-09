@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -60,32 +61,31 @@ func main() {
 	})
 	r.GET("/getReminder", func(c *gin.Context) {
 		// Find all reminders in the collection
-		cursor, err := collection.Find(context.TODO(), nil)
+		cur, err := collection.Find(context.TODO(), bson.D{})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		defer cursor.Close(context.TODO())
 
-		// Iterate over the cursor and build a slice of AddReminder
+		// Define a slice to hold the reminders
 		var reminders []AddReminder
-		for cursor.Next(context.TODO()) {
+
+		// Iterate over the cursor and decode the reminders into the slice
+		for cur.Next(context.TODO()) {
 			var reminder AddReminder
-			if err := cursor.Decode(&reminder); err != nil {
+			err := cur.Decode(&reminder)
+			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
 			reminders = append(reminders, reminder)
 		}
-
-		// Return the slice of reminders
-		c.JSON(http.StatusOK, gin.H{"reminders": reminders})
 	})
+
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Listening to the Localhost",
 		})
 	})
 	r.Run("localhost:8080")
-
 }
