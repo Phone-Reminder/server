@@ -24,6 +24,14 @@ type AddReminder struct {
 
 func main() {
 
+	x := AddReminder{
+		UserID:      4,
+		Date:        time.Date(2023, 03, 9, 17, 58, 0, 0, time.UTC),
+		PhoneNumber: "+447876801343",
+		Message:     "Hi it worked",
+	}
+	fmt.Println(x)
+
 	// Set client options
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 
@@ -56,49 +64,36 @@ func main() {
 			currTime := time.Now().UTC()
 
 			var reminder AddReminder
-			err := collection.FindOne(context.Background(), bson.M{"date": currTime}).Decode(&reminder)
+			err := collection.FindOne(context.Background(), bson.M{"date": bson.M{"$lt": currTime}}).Decode(&reminder)
 
 			if err != nil {
 				log.Printf("Failed to find reminder: %v", err)
 				continue
 			}
-			clientSMS := twilio.NewRestClient()
 
-			params := &api.CreateMessageParams{}
-			params.SetBody("Hello There!")
-			params.SetFrom("+13203357753")
-			params.SetTo("+447876801343")
+			if reminder.Date.Before(currTime) {
+				// The reminder date has passed the current time
+				fmt.Println("if statement entered")
+				clientSMS := twilio.NewRestClient()
 
-			resp, err := clientSMS.Api.CreateMessage(params)
-			if err != nil {
-				fmt.Println(err.Error())
-			} else {
-				if resp.Sid != nil {
-					fmt.Println(*resp.Sid)
+				params := &api.CreateMessageParams{}
+				params.SetBody("Hello There!")
+				params.SetFrom("+13203357753")
+				params.SetTo("+447876801343")
+
+				resp, err := clientSMS.Api.CreateMessage(params)
+				if err != nil {
+					fmt.Println(err.Error())
 				} else {
-					fmt.Println(resp.Sid)
+					if resp.Sid != nil {
+						fmt.Println(*resp.Sid)
+					} else {
+						fmt.Println(resp.Sid)
+					}
 				}
 			}
 		}
 	}()
-
-	// clientSMS := twilio.NewRestClient()
-
-	// params := &api.CreateMessageParams{}
-	// params.SetBody("Hello There!")
-	// params.SetFrom("+13203357753")
-	// params.SetTo("+447876801343")
-
-	// resp, err := clientSMS.Api.CreateMessage(params)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// } else {
-	// 	if resp.Sid != nil {
-	// 		fmt.Println(*resp.Sid)
-	// 	} else {
-	// 		fmt.Println(resp.Sid)
-	// 	}
-	// }
 
 	r.POST("/addReminder", func(c *gin.Context) {
 		var addRemData AddReminder
@@ -151,5 +146,4 @@ func main() {
 	})
 	r.Run("localhost:8080")
 	fmt.Println("hi")
-
 }
