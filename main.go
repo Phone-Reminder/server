@@ -57,31 +57,34 @@ func main() {
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Reminder added Successfully"})
+			"message": "Reminder added Successfully."})
 	})
 	r.GET("/getReminder", func(c *gin.Context) {
 		// Find all reminders in the collection
-		cur, err := collection.Find(context.TODO(), bson.D{})
+		// Find all the reminders
+	cur, err := collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Define a slice to hold the reminders
+	var reminders []AddReminder
+
+	// Iterate over the cursor and decode the reminders into the slice
+	for cur.Next(context.TODO()) {
+		var reminder AddReminder
+		err := cur.Decode(&reminder)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		reminders = append(reminders, reminder)
+	}
 
-		// Define a slice to hold the reminders
-		var reminders []AddReminder
-
-		// Iterate over the cursor and decode the reminders into the slice
-		for cur.Next(context.TODO()) {
-			var reminder AddReminder
-			err := cur.Decode(&reminder)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
-			reminders = append(reminders, reminder)
-		}
-	})
-
+	// Return the slice of reminders
+	c.JSON(http.StatusOK, gin.H{"reminders": reminders})
+})
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Listening to the Localhost",
