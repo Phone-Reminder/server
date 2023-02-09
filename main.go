@@ -18,7 +18,6 @@ import (
 )
 
 type AddReminder struct {
-	UserID      int       `json:"userid"`
 	Date        time.Time `json:"date"`
 	PhoneNumber string    `json:"phonenumber"`
 	Message     string    `json:"message"`
@@ -75,7 +74,6 @@ func main() {
 
 			if reminder.Date.Before(currTime) {
 				// The reminder date has passed the current time
-
 				clientSMS := twilio.NewRestClient()
 
 				params := &api.CreateMessageParams{}
