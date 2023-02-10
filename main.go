@@ -58,7 +58,7 @@ func main() {
 	collection := client.Database("reminder").Collection("reminders")
 
 	r := gin.Default()
-	r.Use(CORS())
+	r.Use(cors())
 
 	//LOGIC
 	// Schedule a task to run every minute
@@ -155,10 +155,12 @@ func main() {
 	})
 	r.Run(localHost)
 }
-func CORS() gin.HandlerFunc {
+
+func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, OPTIONS, PATCH")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
