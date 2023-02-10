@@ -8,7 +8,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/twilio/twilio-go"
@@ -45,7 +44,6 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
@@ -60,24 +58,7 @@ func main() {
 	collection := client.Database("reminder").Collection("reminders")
 
 	r := gin.Default()
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000"},
-		AllowMethods:     []string{"GET", "POST"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "https://github.com"
-		},
-		MaxAge: 12 * time.Hour,
-	}))
-
-	// r.Use(cors.New(cors.Config{
-	// 	AllowOrigins:     []string{"http://localhost:3000"},
-	// 	AllowMethods:     []string{"GET", "POST"},
-	// 	AllowHeaders:     []string{"Content-Type"},
-	// 	AllowCredentials: true,
-	// }))
+	r.Use(CORS())
 
 	//LOGIC
 	// Schedule a task to run every minute
@@ -173,4 +154,17 @@ func main() {
 		})
 	})
 	r.Run(localHost)
+}
+func CORS() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, HEAD, POST, PUT, DELETE, OPTIONS, PATCH")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
