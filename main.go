@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/rs/cors"
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 	"go.mongodb.org/mongo-driver/bson"
@@ -25,20 +25,7 @@ type AddReminder struct {
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/addReminder/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
-		w.Header().Set("Access-Control-Allow-Methods", "POST")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
-		// Handle the addReminder request
-	})
-
-	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"http://localhost:3000"},
-	})
-
-	http.ListenAndServe(":8080", c.Handler(mux))
 	// Load environment variables from .env file
 
 	err := godotenv.Load()
@@ -58,6 +45,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
@@ -72,6 +60,24 @@ func main() {
 	collection := client.Database("reminder").Collection("reminders")
 
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "https://github.com"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+
+	// r.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     []string{"http://localhost:3000"},
+	// 	AllowMethods:     []string{"GET", "POST"},
+	// 	AllowHeaders:     []string{"Content-Type"},
+	// 	AllowCredentials: true,
+	// }))
 
 	//LOGIC
 	// Schedule a task to run every minute
