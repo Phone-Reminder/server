@@ -36,6 +36,8 @@ func main() {
 	dbConnection := os.Getenv("DBURI")
 	fromPhoneNo := os.Getenv("FROMPHONENO")
 	localHost := os.Getenv("LOCALHOST")
+	twilioSID := os.Getenv("TWILIO_SID")
+	twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
 	clientOptions := options.Client().ApplyURI(dbConnection)
 
 	// Connect to MongoDB
@@ -74,10 +76,18 @@ func main() {
 				log.Printf("Failed to find reminder: %v", err)
 				continue
 			}
+			// clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
+			// 		Username: twilioSID,
+			// 		Password: twilioAuthToken,
+			// 	})
 
 			if reminder.Date.Before(currTime) {
 				// The reminder date has passed the current time
-				clientSMS := twilio.NewRestClient()
+				// clientSMS := twilio.NewRestClient()
+				clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
+					Username: twilioSID,
+					Password: twilioAuthToken,
+				})
 
 				params := &api.CreateMessageParams{}
 				params.SetBody(reminder.Message)
