@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 	"github.com/twilio/twilio-go"
 	api "github.com/twilio/twilio-go/rest/api/v2010"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,7 +25,22 @@ type AddReminder struct {
 }
 
 func main() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/addReminder/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		// Handle the addReminder request
+	})
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000"},
+	})
+
+	http.ListenAndServe(":8080", c.Handler(mux))
 	// Load environment variables from .env file
+
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println("Error loading .env file:", err)
