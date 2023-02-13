@@ -158,12 +158,29 @@ func main() {
 	})
 
 	//server
+	// r.GET("/", func(c *gin.Context) {
+	// 	c.JSON(http.StatusOK, gin.H{
+	// 		"message": "Listening to the Localhost",
+	// 	})
+	// })
+
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Listening to the Localhost",
-		})
+		url := "http://127.0.0.1:3000"
+		req, _ := http.NewRequest("GET", url, nil)
+		req.Header = c.Request.Header
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			c.AbortWithError(http.StatusBadGateway, err)
+			return
+		}
+		defer resp.Body.Close()
+
+		c.DataFromReader(resp.StatusCode, resp.ContentLength, resp.Header.Get("Content-Type"), resp.Body, nil)
 	})
 	r.Run(localHost)
+
 }
 
 func cors() gin.HandlerFunc {
