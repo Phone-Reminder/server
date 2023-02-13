@@ -36,7 +36,7 @@ func main() {
 	// Set client options
 	dbConnection := os.Getenv("DBURI")
 	fromPhoneNo := os.Getenv("FROMPHONENO")
-	localHost := os.Getenv("LOCALHOST")
+	// localHost := os.Getenv("LOCALHOST")
 	twilioSID := os.Getenv("TWILIO_SID")
 	twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
 	clientOptions := options.Client().ApplyURI(dbConnection)
@@ -180,7 +180,7 @@ func main() {
 
 		c.DataFromReader(resp.StatusCode, resp.ContentLength, resp.Header.Get("Content-Type"), resp.Body, nil)
 	})
-	r.Run(localHost)
+	r.Run(":8080")
 
 }
 
