@@ -27,7 +27,7 @@ type AddReminder struct {
 
 func main() {
 
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 	// Load environment variables from .env file
 
 	err := godotenv.Load()
