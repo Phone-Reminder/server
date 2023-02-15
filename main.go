@@ -63,7 +63,7 @@ func main() {
 	collection := client.Database("reminder").Collection("reminders")
 
 	r := gin.Default()
-	r.Use(cors())
+	r.Use(CORS())
 
 	//LOGIC
 	// Schedule a task to run every minute
