@@ -168,7 +168,7 @@ func main() {
 	// })
 
 	r.GET("/", func(c *gin.Context) {
-		url := "http://127.0.0.1:3000"
+		url := "https://reminders-bt-ss.netlify.app/"
 		req, _ := http.NewRequest("GET", url, nil)
 		req.Header = c.Request.Header
 
@@ -182,6 +182,7 @@ func main() {
 
 		c.DataFromReader(resp.StatusCode, resp.ContentLength, resp.Header.Get("Content-Type"), resp.Body, nil)
 	})
+
 	r.Run(localHost)
 
 }
