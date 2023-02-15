@@ -168,7 +168,7 @@ func main() {
 	// })
 
 	r.GET("/", func(c *gin.Context) {
-		url := "https://reminders-bt-ss.netlify.app/"
+		url := "*"
 		req, _ := http.NewRequest("GET", url, nil)
 		req.Header = c.Request.Header
 
