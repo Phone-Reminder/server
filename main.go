@@ -65,7 +65,7 @@ func main() {
 
 	//LOGIC
 	// Schedule a task to run every minute
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(10 * time.Minute)
 	go func() {
 		for range ticker.C {
 			currTime := time.Now().UTC()
