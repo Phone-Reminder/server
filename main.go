@@ -187,17 +187,30 @@ func main() {
 
 }
 
-func cors() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://reminders-bt-ss.netlify.app/")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+// func cors() gin.HandlerFunc {
+// 	return func(c *gin.Context) {
+// 		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://reminders-bt-ss.netlify.app/")
+// 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
+// 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
+// 		if c.Request.Method == "OPTIONS" {
+// 			c.AbortWithStatus(204)
+// 			return
+// 		}
+
+//			c.Next()
+//		}
+//	}
+func CORS() gin.HandlerFunc {
+	// TO allow CORS
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-
 		c.Next()
 	}
 }
