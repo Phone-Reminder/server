@@ -3,15 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+
+	// "log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/twilio/twilio-go"
-	api "github.com/twilio/twilio-go/rest/api/v2010"
+
+	// "github.com/twilio/twilio-go"
+	// api "github.com/twilio/twilio-go/rest/api/v2010"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -35,10 +37,10 @@ func main() {
 
 	// Set client options
 	dbConnection := os.Getenv("DBURI")
-	fromPhoneNo := os.Getenv("FROMPHONENO")
+	// fromPhoneNo := os.Getenv("FROMPHONENO")
 	// localHost := os.Getenv("LOCALHOST")
-	twilioSID := os.Getenv("TWILIO_SID")
-	twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
+	// twilioSID := os.Getenv("TWILIO_SID")
+	// twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
 	clientOptions := options.Client().ApplyURI(dbConnection)
 
 	// Connect to MongoDB
@@ -65,55 +67,55 @@ func main() {
 
 	//LOGIC
 	// Schedule a task to run every minute
-	ticker := time.NewTicker(10 * time.Minute)
-	go func() {
-		for range ticker.C {
-			currTime := time.Now().UTC()
-			ctx := context.Background()
-			var reminder AddReminder
-			err := collection.FindOne(ctx, bson.M{"date": bson.M{"$lt": currTime}}).Decode(&reminder)
+	// ticker := time.NewTicker(10 * time.Minute)
+	// go func() {
+	// 	for range ticker.C {
+	// 		currTime := time.Now().UTC()
+	// 		ctx := context.Background()
+	// 		var reminder AddReminder
+	// 		err := collection.FindOne(ctx, bson.M{"date": bson.M{"$lt": currTime}}).Decode(&reminder)
 
-			if err != nil {
-				log.Printf("Failed to find reminder: %v", err)
-				continue
-			}
-			// clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
-			// 		Username: twilioSID,
-			// 		Password: twilioAuthToken,
-			// 	})
+	// 		if err != nil {
+	// 			log.Printf("Failed to find reminder: %v", err)
+	// 			continue
+	// 		}
+	// 		// clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
+	// 		// 		Username: twilioSID,
+	// 		// 		Password: twilioAuthToken,
+	// 		// 	})
 
-			if reminder.Date.Before(currTime) {
-				// The reminder date has passed the current time
-				// clientSMS := twilio.NewRestClient()
-				clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
-					Username: twilioSID,
-					Password: twilioAuthToken,
-				})
+	// 		if reminder.Date.Before(currTime) {
+	// 			// The reminder date has passed the current time
+	// 			// clientSMS := twilio.NewRestClient()
+	// 			clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
+	// 				Username: twilioSID,
+	// 				Password: twilioAuthToken,
+	// 			})
 
-				params := &api.CreateMessageParams{}
-				params.SetBody(reminder.Message)
-				params.SetFrom(fromPhoneNo)
-				params.SetTo(reminder.PhoneNumber)
+	// 			params := &api.CreateMessageParams{}
+	// 			params.SetBody(reminder.Message)
+	// 			params.SetFrom(fromPhoneNo)
+	// 			params.SetTo(reminder.PhoneNumber)
 
-				resp, err := clientSMS.Api.CreateMessage(params)
-				if err != nil {
-					fmt.Println(err.Error())
-				} else {
-					if resp.Sid != nil {
-						fmt.Println(*resp.Sid)
-					} else {
-						fmt.Println(resp.Sid)
+	// 			resp, err := clientSMS.Api.CreateMessage(params)
+	// 			if err != nil {
+	// 				fmt.Println(err.Error())
+	// 			} else {
+	// 				if resp.Sid != nil {
+	// 					fmt.Println(*resp.Sid)
+	// 				} else {
+	// 					fmt.Println(resp.Sid)
 
-					}
+	// 				}
 
-				}
-				_, err = collection.DeleteOne(ctx, bson.M{"date": reminder.Date})
-				if err != nil {
-					log.Printf("Failed to delete reminder: %v", err)
-				}
-			}
-		}
-	}()
+	// 			}
+	// 			_, err = collection.DeleteOne(ctx, bson.M{"date": reminder.Date})
+	// 			if err != nil {
+	// 				log.Printf("Failed to delete reminder: %v", err)
+	// 			}
+	// 		}
+	// 	}
+	// }()
 
 	r.POST("/addReminder", func(c *gin.Context) {
 		var addRemData AddReminder
