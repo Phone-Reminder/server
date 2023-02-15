@@ -27,7 +27,7 @@ type AddReminder struct {
 
 func main() {
 
-	gin.SetMode(gin.ReleaseMode)
+	// gin.SetMode(gin.ReleaseMode)
 	// Load environment variables from .env file
 
 	err := godotenv.Load()
@@ -188,7 +188,7 @@ func main() {
 
 func cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://reminders-bt-ss.netlify.app/")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
