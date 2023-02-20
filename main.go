@@ -79,10 +79,6 @@ func main() {
 				log.Printf("Failed to find reminder: %v", err)
 				continue
 			}
-			// clientSMS := twilio.NewRestClientWithParams(twilio.ClientParams{
-			// 		Username: twilioSID,
-			// 		Password: twilioAuthToken,
-			// 	})
 
 			if reminder.Date.Before(currTime) {
 				// The reminder date has passed the current time
@@ -167,24 +163,6 @@ func main() {
 		})
 	})
 
-	// r.GET("/", func(c *gin.Context) {
-	// 	url := "*"
-	// 	req, _ := http.NewRequest("GET", url, nil)
-	// 	req.Header = c.Request.Header
-
-	// 	client := &http.Client{}
-	// 	resp, err := client.Do(req)
-	// 	if err != nil {
-	// 		c.AbortWithError(http.StatusBadGateway, err)
-	// 		return
-	// 	}
-	// 	defer resp.Body.Close()
-
-	// 	c.DataFromReader(resp.StatusCode, resp.ContentLength, resp.Header.Get("Content-Type"), resp.Body, nil)
-	// })
-
-	// r.Run(localHost)
-	// Read the HOST environment variable
 	host := os.Getenv("HOST")
 	if host == "" {
 		// Set default value to 127.0.0.1
@@ -195,20 +173,6 @@ func main() {
 	r.Run(host + ":4000")
 }
 
-// func cors() gin.HandlerFunc {
-// 	return func(c *gin.Context) {
-// 		c.Writer.Header().Set("Access-Control-Allow-Origin", "https://reminders-bt-ss.netlify.app/")
-// 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE")
-// 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-// 		if c.Request.Method == "OPTIONS" {
-// 			c.AbortWithStatus(204)
-// 			return
-// 		}
-
-//			c.Next()
-//		}
-//	}
 func CORS() gin.HandlerFunc {
 	// TO allow CORS
 	return func(c *gin.Context) {
